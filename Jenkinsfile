@@ -1,28 +1,41 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    AWS_CREDS = credentials('aws-creds')
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        git branch: 'main', url: 'https://github.com/yourusername/aws-jenkins-terraform-project.git'
-      }
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
     }
 
-    stage('Terraform Init') {
-      steps {
-        sh 'terraform init infra/'
-      }
-    }
+    stages {
 
-    stage('Terraform Apply') {
-      steps {
-        sh 'terraform apply -auto-approve infra/'
-      }
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Akshaygale/aws-jenkins-terraform-project.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                sh '''
+                    terraform init
+                '''
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                sh '''
+                    terraform plan -out=tfplan
+                '''
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                sh '''
+                    terraform apply -auto-approve
+                '''
+            }
+        }
     }
-  }
 }
-
